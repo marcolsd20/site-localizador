@@ -7,34 +7,33 @@
 <link href="https://fonts.googleapis.com/css2?family=VT323&family=Orbitron:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <style>
-/* --- Todo o CSS do seu projeto --- */
 * { box-sizing: border-box; }
 body { margin:0; font-family:'VT323',monospace; color:#00ffcc; background:black; overflow-x:hidden; }
 canvas#matrix { position:fixed; top:0; left:0; z-index:-1; width:100%; height:100%; background:black; }
+
 header { text-align:center; padding:20px; font-family:'Orbitron',sans-serif; color:#00ffe5; text-shadow:0 0 15px #00ffe5; }
 header .radar { font-size:40px; display:inline-block; animation:spin 4s linear infinite; color:#00ffcc; text-shadow:0 0 20px #00ffcc; }
 @keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);} }
+
 nav { text-align:center; margin-bottom:20px; }
 nav button { display:inline-block; background:transparent; border:2px solid #00ffcc; color:#00ffcc; padding:12px 24px; margin:10px; border-radius:10px; font-size:18px; cursor:pointer; text-shadow:0 0 10px #00ffcc; box-shadow:0 0 20px rgba(0,255,204,0.6); transition: all 0.2s; }
 nav button:hover { background:#00ffcc; color:black; box-shadow:0 0 30px #00ffcc,0 0 60px #00ffcc; }
+
 .section { display:none; text-align:center; padding:20px; }
 .section.active { display:block; }
+
 .btn { display:inline-block; background:transparent; border:2px solid #00ffcc; color:#00ffcc; padding:10px 20px; margin-top:15px; border-radius:10px; font-size:18px; cursor:pointer; text-shadow:0 0 10px #00ffcc; box-shadow:0 0 20px rgba(0,255,204,0.6); transition: all 0.2s; }
 .btn:hover { background:#00ffcc; color:black; box-shadow:0 0 30px #00ffcc,0 0 60px #00ffcc; }
-#paywall-modal,#login-modal,#register-modal { position:fixed; inset:0; background:rgba(0,0,0,0.85); display:none; align-items:center; justify-content:center; z-index:9999; }
-#paywall-modal .content,#login-modal .content,#register-modal .content { background:#111; border:2px solid #00ffcc; padding:30px; border-radius:15px; text-align:center; color:#00ffcc; box-shadow:0 0 25px #00ffcc; max-width:400px; width:90%; animation:pulse 2s infinite; }
+
+#login-modal,#register-modal { position:fixed; inset:0; background:rgba(0,0,0,0.85); display:none; align-items:center; justify-content:center; z-index:9999; }
+#login-modal .content,#register-modal .content { background:#111; border:2px solid #00ffcc; padding:30px; border-radius:15px; text-align:center; color:#00ffcc; box-shadow:0 0 25px #00ffcc; max-width:400px; width:90%; animation:pulse 2s infinite; }
 @keyframes pulse { 0%,100%{box-shadow:0 0 20px #00ffcc;} 50%{box-shadow:0 0 40px #00ffcc;} }
+
 .hidden{ display:none; }
 .loading-text{ margin-top:20px; font-size:18px; }
-.sim-log{ text-align:left; background:#111; color:#00ffcc; padding:10px; border-radius:8px; max-height:400px; overflow:auto; font-size:14px; box-shadow:0 0 15px #00ffcc; display:flex; flex-direction:column; }
-.result{ margin-top:15px; font-size:18px; font-weight:bold; }
-.fade-in{ opacity:0; transform: scale(0.95); animation: fadeIn 1s forwards; }
-@keyframes fadeIn{to{opacity:1;transform: scale(1);} }
+
 .floating-btn{ position:fixed; bottom:20px; right:20px; z-index:999; background:#00ffcc; color:black; border:none; padding:15px 20px; border-radius:50px; font-size:18px; cursor:pointer; box-shadow:0 0 20px #00ffcc; transition: all 0.2s; }
 .floating-btn:hover{ background:#00ffe5; box-shadow:0 0 30px #00ffcc,0 0 60px #00ffcc; }
-#map{ width:90%; height:220px; border-radius:10px; box-shadow:0 0 20px #00ffcc; margin: 10px auto; filter:blur(8px); }
-#assinatura-template{ display:none; text-align:center; margin-top:20px; padding:20px; border:2px solid #00ffcc; border-radius:15px; font-size:18px; max-width:400px; margin-left:auto; margin-right:auto; box-shadow:0 0 25px #00ffcc; }
-#imgWhats{ width:320px; margin-top:20px; border-radius:15px; box-shadow:0 0 30px #00ffcc,0 0 50px #00ffe5; }
 </style>
 </head>
 <body>
@@ -57,14 +56,6 @@ nav button:hover { background:#00ffcc; color:black; box-shadow:0 0 30px #00ffcc,
     <br>
     <button id="btnLocalizar" class="btn">Iniciar Rastreamento</button>
     <div id="loadingLocalizacao" class="loading-text hidden">⏳ Simulando rastreamento...</div>
-    <div id="logLocalizacao" class="sim-log hidden"></div>
-    <p id="resultadoLocalizacao" class="result hidden"></p>
-    <div id="map" class="hidden"></div>
-    <div id="assinatura-template">
-        <h3>✅ Achamos a localização!</h3>
-        <p>Assine agora para desbloquear todos os detalhes da localização da pessoa.</p>
-        <a href="https://seu-link-de-assinatura.com" target="_blank" class="btn">ASSINAR AGORA</a>
-    </div>
 </section>
 
 <section id="whatsapp" class="section">
@@ -73,17 +64,14 @@ nav button:hover { background:#00ffcc; color:black; box-shadow:0 0 30px #00ffcc,
     <br>
     <button id="btnWhats" class="btn">Extrair Mensagens</button>
     <div id="loadingWhats" class="loading-text hidden">⏳ Acessando servidor do WhatsApp...</div>
-    <div id="logWhats" class="sim-log hidden"></div>
-    <p id="resultadoWhats" class="result hidden"></p>
-    <img id="imgWhats" src="assets/como-fixar-conversas-ou-grupos-no-topo-do-whatsapp-androidios-captura-de-tela.jpg" class="hidden fade-in" alt="WhatsApp Simulado">
 </section>
 </main>
 
-<!-- Modais -->
+<!-- Login / Registro Supabase -->
 <div id="login-modal">
 <div class="content">
 <h2>🔐 Login</h2>
-<input type="text" id="login-usuario" placeholder="Usuário" class="btn" style="width:80%; margin:5px 0;">
+<input type="text" id="login-email" placeholder="E-mail" class="btn" style="width:80%; margin:5px 0;">
 <input type="password" id="login-senha" placeholder="Senha" class="btn" style="width:80%; margin:5px 0;">
 <br>
 <button id="btnLogin" class="btn">Entrar</button>
@@ -94,7 +82,7 @@ nav button:hover { background:#00ffcc; color:black; box-shadow:0 0 30px #00ffcc,
 <div id="register-modal">
 <div class="content">
 <h2>📝 Criar Conta</h2>
-<input type="text" id="register-usuario" placeholder="Usuário" class="btn" style="width:80%; margin:5px 0;">
+<input type="text" id="register-email" placeholder="E-mail" class="btn" style="width:80%; margin:5px 0;">
 <input type="password" id="register-senha" placeholder="Senha" class="btn" style="width:80%; margin:5px 0;">
 <br>
 <button id="btnRegister" class="btn">Registrar</button>
@@ -102,52 +90,10 @@ nav button:hover { background:#00ffcc; color:black; box-shadow:0 0 30px #00ffcc,
 </div>
 </div>
 
-<script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-const SUPABASE_URL = 'https://jyhemlmxsoqheirmivdn.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.nXhG0EV5FkSeZe1v9Tgf2Jc2KmIL4ixplgGWUJ_NTY4';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// Mostrar login ao abrir
-window.onload = () => { document.getElementById('login-modal').style.display='flex'; };
-
-// Mostrar abas
-function mostrarAba(id){ document.querySelectorAll('.section').forEach(sec=>sec.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-
-// --- Login ---
-document.getElementById("btnLogin").addEventListener("click", async ()=>{
-    const email = document.getElementById("login-usuario").value.trim();
-    const senha = document.getElementById("login-senha").value.trim();
-    if(!email || !senha){ alert("Preencha usuário e senha!"); return; }
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
-    if(error){ alert(error.message); return; }
-    document.getElementById('login-modal').style.display='none';
-    mostrarAba('localizador');
-});
-
-// --- Registro ---
-document.getElementById("btnRegister").addEventListener("click", async ()=>{
-    const email = document.getElementById("register-usuario").value.trim();
-    const senha = document.getElementById("register-senha").value.trim();
-    if(!email || !senha){ alert("Preencha usuário e senha!"); return; }
-    const { data, error } = await supabase.auth.signUp({ email, password: senha });
-    if(error){ alert(error.message); return; }
-    alert("Conta criada! Faça login.");
-    document.getElementById('register-modal').style.display='none';
-    document.getElementById('login-modal').style.display='flex';
-});
-
-// --- Voltar ao login ---
-document.getElementById("btnVoltarRegister").addEventListener("click", ()=>{
-    document.getElementById('register-modal').style.display='none';
-    document.getElementById('login-modal').style.display='flex';
-});
-</script>
-
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
 <script>
-// --- Matrix ---
+// Matrix Background
 const canvas=document.getElementById("matrix"),ctx=canvas.getContext("2d");
 canvas.height=window.innerHeight; canvas.width=window.innerWidth;
 const letters="01",fontSize=14,columns=canvas.width/fontSize,drops=Array(Math.floor(columns)).fill(1);
@@ -156,6 +102,48 @@ ctx.fillStyle="#00ffcc"; ctx.font=fontSize+"px monospace";
 for(let i=0;i<drops.length;i++){ const text=letters[Math.floor(Math.random()*letters.length)]; ctx.fillText(text,i*fontSize,drops[i]*fontSize);
 if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0; drops[i]++; } }
 setInterval(draw,33);
+
+// Abas
+function mostrarAba(id){ document.querySelectorAll('.section').forEach(sec=>sec.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+
+// --- Supabase ---
+const SUPABASE_URL = 'https://jyhemlmxsoqheirmivdn.supabase.co';
+const SUPABASE_ANON_KEY = 'COLOQUE_SUA_CHAVE_ANON';
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Mostrar login ao abrir
+window.onload = ()=>{ document.getElementById('login-modal').style.display='flex'; };
+
+// Login
+document.getElementById("btnLogin").addEventListener("click", async ()=>{
+    const email = document.getElementById("login-email").value.trim();
+    const senha = document.getElementById("login-senha").value.trim();
+    if(!email||!senha){ alert("Preencha e-mail e senha!"); return; }
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
+    if(error){ alert(error.message); return; }
+    document.getElementById('login-modal').style.display='none';
+});
+
+// Registro
+document.getElementById("btnRegister").addEventListener("click", async ()=>{
+    const email = document.getElementById("register-email").value.trim();
+    const senha = document.getElementById("register-senha").value.trim();
+    if(!email||!senha){ alert("Preencha e-mail e senha!"); return; }
+    const { data, error } = await supabase.auth.signUp({ email, password: senha });
+    if(error){ alert(error.message); return; }
+    alert("Conta criada! Faça login.");
+    document.getElementById('register-modal').style.display='none';
+    document.getElementById('login-modal').style.display='flex';
+});
+
+document.getElementById("btnRegistrarTela").addEventListener("click", ()=>{
+    document.getElementById('login-modal').style.display='none';
+    document.getElementById('register-modal').style.display='flex';
+});
+document.getElementById("btnVoltarRegister").addEventListener("click", ()=>{
+    document.getElementById('register-modal').style.display='none';
+    document.getElementById('login-modal').style.display='flex';
+});
 </script>
 </body>
 </html>
