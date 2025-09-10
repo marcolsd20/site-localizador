@@ -97,7 +97,7 @@ nav button:hover { background:#00ffcc; color:black; box-shadow:0 0 30px #00ffcc,
 <div id="login-modal">
 <div class="content">
 <h2>🔐 Login Necessário</h2>
-<input type="text" id="login-usuario" placeholder="Usuário" class="btn" style="width:80%; margin:5px 0;">
+<input type="text" id="login-usuario" placeholder="E-mail" class="btn" style="width:80%; margin:5px 0;">
 <input type="password" id="login-senha" placeholder="Senha" class="btn" style="width:80%; margin:5px 0;">
 <br>
 <button id="btnLogin" class="btn">Entrar</button>
@@ -108,7 +108,7 @@ nav button:hover { background:#00ffcc; color:black; box-shadow:0 0 30px #00ffcc,
 <div id="register-modal">
 <div class="content">
 <h2>📝 Criar Conta</h2>
-<input type="text" id="register-usuario" placeholder="Usuário" class="btn" style="width:80%; margin:5px 0;">
+<input type="text" id="register-usuario" placeholder="E-mail" class="btn" style="width:80%; margin:5px 0;">
 <input type="password" id="register-senha" placeholder="Senha" class="btn" style="width:80%; margin:5px 0;">
 <br>
 <button id="btnRegister" class="btn">Registrar</button>
@@ -130,7 +130,13 @@ nav button:hover { background:#00ffcc; color:black; box-shadow:0 0 30px #00ffcc,
 <button class="floating-btn" id="btnFlutuante">ASSINAR</button>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
 <script>
+// --- Supabase Config ---
+const SUPABASE_URL = "https://jyhemlmxsoqheirmivdn.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5aGVtbG14c29xaGVpcm1pdmRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1NDUzNjAsImV4cCI6MjA3MzEyMTM2MH0.nXhG0EV5FkSeZe1v9Tgf2Jc2KmIL4ixplgGWUJ_NTY4";
+const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 // --- Matrix ---
 const canvas=document.getElementById("matrix"),ctx=canvas.getContext("2d");
 canvas.height=window.innerHeight; canvas.width=window.innerWidth;
@@ -144,15 +150,8 @@ setInterval(draw,33);
 // --- Abas ---
 function mostrarAba(id){ document.querySelectorAll('.section').forEach(sec=>sec.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
-// --- Localizador ---
-const btnLocalizar=document.getElementById("btnLocalizar"),
-inputTarget=document.getElementById("inputTarget"),
-loadingLocalizacao=document.getElementById("loadingLocalizacao"),
-logLocalizacao=document.getElementById("logLocalizacao"),
-resultadoLocalizacao=document.getElementById("resultadoLocalizacao"),
-mapDiv=document.getElementById("map"),
-assinaturaTemplate=document.getElementById("assinatura-template");
-
+// --- Localizador & WhatsApp (sem mudança) ---
+const btnLocalizar=document.getElementById("btnLocalizar"), inputTarget=document.getElementById("inputTarget"), loadingLocalizacao=document.getElementById("loadingLocalizacao"), logLocalizacao=document.getElementById("logLocalizacao"), resultadoLocalizacao=document.getElementById("resultadoLocalizacao"), mapDiv=document.getElementById("map"), assinaturaTemplate=document.getElementById("assinatura-template");
 let map;
 btnLocalizar.addEventListener("click",()=>{
     const valor=inputTarget.value.trim();
@@ -170,14 +169,12 @@ btnLocalizar.addEventListener("click",()=>{
             if(!map){
                 map = L.map('map');
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
-                if(navigator.geolocation){ navigator.geolocation.getCurrentPosition(pos=>{ map.setView([pos.coords.latitude,pos.coords.longitude],13); L.marker([pos.coords.latitude,pos.coords.longitude]).addTo(map); },
-                ()=>{ map.setView([-23.5505,-46.6333],13); L.marker([-23.5505,-46.6333]).addTo(map); }); } else{ map.setView([-23.5505,-46.6333],13); L.marker([-23.5505,-46.6333]).addTo(map); }
+                if(navigator.geolocation){ navigator.geolocation.getCurrentPosition(pos=>{ map.setView([pos.coords.latitude,pos.coords.longitude],13); L.marker([pos.coords.latitude,pos.coords.longitude]).addTo(map); }, ()=>{ map.setView([-23.5505,-46.6333],13); L.marker([-23.5505,-46.6333]).addTo(map); }); } else{ map.setView([-23.5505,-46.6333],13); L.marker([-23.5505,-46.6333]).addTo(map); }
             }
             map.getContainer().style.filter='blur(8px)';
         });
     },1000);
 });
-
 function simularProcesso(logEl, finalEl, etapas, callback){
     logEl.innerHTML=""; logEl.classList.remove("hidden"); finalEl.classList.add("hidden");
     let i=0;
@@ -188,14 +185,7 @@ function simularProcesso(logEl, finalEl, etapas, callback){
     proximo();
 }
 
-// --- WhatsApp ---
-const btnWhats = document.getElementById("btnWhats"),
-inputWhats = document.getElementById("inputWhats"),
-loadingWhats = document.getElementById("loadingWhats"),
-logWhats = document.getElementById("logWhats"),
-resultadoWhats = document.getElementById("resultadoWhats"),
-imgWhats = document.getElementById("imgWhats");
-
+const btnWhats = document.getElementById("btnWhats"), inputWhats = document.getElementById("inputWhats"), loadingWhats = document.getElementById("loadingWhats"), logWhats = document.getElementById("logWhats"), resultadoWhats = document.getElementById("resultadoWhats"), imgWhats = document.getElementById("imgWhats");
 btnWhats.addEventListener("click",()=>{
     const valor=inputWhats.value.trim();
     const telRegex=/^\d{8,15}$/;
@@ -217,35 +207,41 @@ document.getElementById("btnFlutuante").addEventListener("click",()=>{ window.op
 document.getElementById("btnAssinar").addEventListener("click",()=>{ window.open("https://seu-link-de-assinatura.com","_blank"); });
 document.getElementById("btnWhatsFlutuante").addEventListener("click", ()=>{ window.open("https://seu-link-de-assinatura.com","_blank"); });
 
-// --- Login & Registro ---
-const SERVER_URL = window.location.origin;
-window.onload = ()=>{ document.getElementById('login-modal').style.display='flex'; };
+// --- Supabase Auth ---
+window.onload = async ()=>{
+    const { data: { session } } = await supabase.auth.getSession();
+    if(!session){ document.getElementById('login-modal').style.display='flex'; }
+};
 
 document.getElementById("btnLogin").addEventListener("click", async ()=>{
-    const usuario=document.getElementById("login-usuario").value.trim();
-    const senha=document.getElementById("login-senha").value.trim();
-    if(!usuario||!senha){ alert("Preencha usuário e senha!"); return; }
-    try{
-        const res = await fetch(`${SERVER_URL}/login`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({usuario,senha}) });
-        const data = await res.json();
-        if(data.success){ document.getElementById('login-modal').style.display='none'; mostrarAba('localizador'); }
-        else alert(data.error);
-    } catch(err){ alert("Erro de conexão com o servidor."); console.error(err); }
+    const email = document.getElementById("login-usuario").value.trim();
+    const senha = document.getElementById("login-senha").value.trim();
+    if(!email||!senha){ alert("Preencha e-mail e senha!"); return; }
+    const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
+    if(error){ alert(error.message); return; }
+    document.getElementById('login-modal').style.display='none';
+    mostrarAba('localizador');
 });
 
-document.getElementById("btnRegistrarTela").addEventListener("click", ()=>{ document.getElementById('login-modal').style.display='none'; document.getElementById('register-modal').style.display='flex'; });
-document.getElementById("btnVoltarRegister").addEventListener("click", ()=>{ document.getElementById('register-modal').style.display='none'; document.getElementById('login-modal').style.display='flex'; });
+document.getElementById("btnRegistrarTela").addEventListener("click", ()=>{
+    document.getElementById('login-modal').style.display='none';
+    document.getElementById('register-modal').style.display='flex';
+});
+
+document.getElementById("btnVoltarRegister").addEventListener("click", ()=>{
+    document.getElementById('register-modal').style.display='none';
+    document.getElementById('login-modal').style.display='flex';
+});
 
 document.getElementById("btnRegister").addEventListener("click", async ()=>{
-    const usuario=document.getElementById("register-usuario").value.trim();
-    const senha=document.getElementById("register-senha").value.trim();
-    if(!usuario||!senha){ alert("Preencha usuário e senha!"); return; }
-    try{
-        const res = await fetch(`${SERVER_URL}/register`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({usuario,senha}) });
-        const data = await res.json();
-        if(data.success){ alert("Conta criada com sucesso! Faça login."); document.getElementById('register-modal').style.display='none'; document.getElementById('login-modal').style.display='flex'; }
-        else alert(data.error);
-    } catch(err){ alert("Erro de conexão com o servidor."); console.error(err); }
+    const email = document.getElementById("register-usuario").value.trim();
+    const senha = document.getElementById("register-senha").value.trim();
+    if(!email||!senha){ alert("Preencha e-mail e senha!"); return; }
+    const { error } = await supabase.auth.signUp({ email, password: senha });
+    if(error){ alert(error.message); return; }
+    alert("Conta criada com sucesso! Verifique seu e-mail.");
+    document.getElementById('register-modal').style.display='none';
+    document.getElementById('login-modal').style.display='flex';
 });
 </script>
 </body>
