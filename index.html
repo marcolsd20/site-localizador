@@ -6,6 +6,7 @@
 <title>Cadê Você?</title>
 <link href="https://fonts.googleapis.com/css2?family=VT323&family=Orbitron:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
 <style>
 * { box-sizing: border-box; }
 body { margin:0; font-family:'VT323',monospace; color:#00ffcc; background:black; overflow-x:hidden; }
@@ -26,34 +27,11 @@ nav button:hover { background:#00ffcc; color:black; box-shadow:0 0 30px #00ffcc,
 .btn { display:inline-block; background:transparent; border:2px solid #00ffcc; color:#00ffcc; padding:10px 20px; margin-top:15px; border-radius:10px; font-size:18px; cursor:pointer; text-shadow:0 0 10px #00ffcc; box-shadow:0 0 20px rgba(0,255,204,0.6); transition: all 0.2s; }
 .btn:hover { background:#00ffcc; color:black; box-shadow:0 0 30px #00ffcc,0 0 60px #00ffcc; }
 
-#paywall-modal,#login-modal,#register-modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.85);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-}
-
-#paywall-modal .content,#login-modal .content,#register-modal .content {
-    background:#111;
-    border:2px solid #00ffcc;
-    padding:30px;
-    border-radius:15px;
-    text-align:center;
-    color:#00ffcc;
-    box-shadow:0 0 25px #00ffcc;
-    max-width:400px;
-    width:90%;
-    animation:pulse 2s infinite;
-}
-
-@keyframes pulse { 0%,100%{box-shadow:0 0 20px #00ffcc;} 50%{box-shadow:0 0 40px #00ffcc;} }
-
+.modal { position:fixed; inset:0; background: rgba(0,0,0,0.85); display:flex; align-items:center; justify-content:center; z-index:9999; }
+.modal .content { background:#111; border:2px solid #00ffcc; padding:30px; border-radius:15px; text-align:center; color:#00ffcc; box-shadow:0 0 25px #00ffcc; max-width:400px; width:90%; }
 .hidden{ display:none; }
-.loading-text{ margin-top:20px; font-size:18px; }
 
+.loading-text{ margin-top:20px; font-size:18px; }
 .sim-log{ text-align:left; background:#111; color:#00ffcc; padding:10px; border-radius:8px; max-height:400px; overflow:auto; font-size:14px; box-shadow:0 0 15px #00ffcc; display:flex; flex-direction:column; }
 .result{ margin-top:15px; font-size:18px; font-weight:bold; }
 .fade-in{ opacity:0; transform: scale(0.95); animation: fadeIn 1s forwards; }
@@ -65,15 +43,15 @@ nav button:hover { background:#00ffcc; color:black; box-shadow:0 0 30px #00ffcc,
 #map{ width:90%; height:220px; border-radius:10px; box-shadow:0 0 20px #00ffcc; margin: 10px auto; filter:blur(8px); }
 #assinatura-template{ display:none; text-align:center; margin-top:20px; padding:20px; border:2px solid #00ffcc; border-radius:15px; font-size:18px; max-width:400px; margin-left:auto; margin-right:auto; box-shadow:0 0 25px #00ffcc; }
 #imgWhats{ width:320px; margin-top:20px; border-radius:15px; box-shadow:0 0 30px #00ffcc,0 0 50px #00ffe5; }
-
-#whatsapp h2{ color:#00ffcc; text-shadow:0 0 15px #00ffe5,0 0 30px #00ffcc; font-size:28px; }
 #logWhats{ background:#111; color:#00ffcc; padding:15px; border-radius:10px; max-height:300px; overflow:auto; font-size:14px; box-shadow:0 0 20px #00ffcc,0 0 40px #00ffe5; }
 #btnWhatsFlutuante{ position:fixed; bottom:90px; right:20px; z-index:999; background:#00ffcc; color:black; border:none; padding:15px 20px; border-radius:50px; font-size:20px; cursor:pointer; box-shadow:0 0 25px #00ffcc,0 0 50px #00ffe5; transition: all 0.2s; }
 #btnWhatsFlutuante:hover{ background:#00ffe5; box-shadow:0 0 35px #00ffcc,0 0 70px #00ffe5; }
 </style>
 </head>
 <body>
+
 <canvas id="matrix"></canvas>
+
 <header>
     <div class="radar">📡</div>
     <h1>CADÊ VOCÊ?</h1>
@@ -115,97 +93,126 @@ nav button:hover { background:#00ffcc; color:black; box-shadow:0 0 30px #00ffcc,
 </section>
 </main>
 
-<!-- Modais Login, Registro, Paywall -->
-<div id="login-modal">
-    <div class="content">
-        <h2>🔐 Login Necessário</h2>
-        <input type="text" id="login-usuario" placeholder="Usuário" class="btn" style="width:80%; margin:5px 0;">
-        <input type="password" id="login-senha" placeholder="Senha" class="btn" style="width:80%; margin:5px 0;">
-        <br>
-        <button id="btnLogin" class="btn">Entrar</button>
-        <button id="btnRegistrarTela" class="btn">Criar Conta</button>
-    </div>
+<!-- Modais Login / Registro -->
+<div id="login-modal" class="modal">
+  <div class="content">
+    <h2>🔐 Login</h2>
+    <input id="login-usuario" placeholder="Email"><br>
+    <input id="login-senha" type="password" placeholder="Senha"><br>
+    <button id="btnLogin" class="btn">Entrar</button>
+    <button id="btnRegistrarTela" class="btn">Criar Conta</button>
+  </div>
 </div>
 
-<div id="register-modal">
-    <div class="content">
-        <h2>📝 Criar Conta</h2>
-        <input type="text" id="register-usuario" placeholder="Usuário" class="btn" style="width:80%; margin:5px 0;">
-        <input type="password" id="register-senha" placeholder="Senha" class="btn" style="width:80%; margin:5px 0;">
-        <br>
-        <button id="btnRegister" class="btn">Registrar</button>
-        <button id="btnVoltarRegister" class="btn">Voltar</button>
-    </div>
+<div id="register-modal" class="modal" style="display:none;">
+  <div class="content">
+    <h2>📝 Criar Conta</h2>
+    <input id="register-usuario" placeholder="Email"><br>
+    <input id="register-senha" type="password" placeholder="Senha"><br>
+    <button id="btnRegister" class="btn">Registrar</button>
+    <button id="btnVoltarRegister" class="btn">Voltar</button>
+  </div>
 </div>
-
-<div id="paywall-modal">
-    <div class="content">
-        <h2>🚀 Assinatura Necessária</h2>
-        <p>Para desbloquear o resultado, assine agora:</p>
-        <p style="font-size:24px; font-weight:bold;">R$ 24,99</p>
-        <a href="https://seu-link-de-assinatura.com" target="_blank" class="btn" id="btnAssinar">ASSINAR AGORA</a>
-        <br>
-        <button id="cancelar-assinatura" class="btn">Cancelar</button>
-    </div>
-</div>
-
-<button class="floating-btn" id="btnFlutuante">ASSINAR</button>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
+<script>
+// --- Supabase ---
+const SUPABASE_URL = "COLE_AQUI_SUA_SUPABASE_URL";
+const SUPABASE_KEY = "COLE_AQUI_SUA_SUPABASE_KEY";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// Matrix
+// --- Matrix ---
 const canvas=document.getElementById("matrix"),ctx=canvas.getContext("2d");
 canvas.height=window.innerHeight; canvas.width=window.innerWidth;
 const letters="01",fontSize=14,columns=canvas.width/fontSize,drops=Array(Math.floor(columns)).fill(1);
-function draw(){ ctx.fillStyle="rgba(0,0,0,0.1)"; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.fillStyle="#00ffcc"; ctx.font=fontSize+"px monospace"; for(let i=0;i<drops.length;i++){ const text=letters[Math.floor(Math.random()*letters.length)]; ctx.fillText(text,i*fontSize,drops[i]*fontSize); if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0; drops[i]++; } }
+function draw(){ ctx.fillStyle="rgba(0,0,0,0.1)"; ctx.fillRect(0,0,canvas.width,canvas.height);
+ctx.fillStyle="#00ffcc"; ctx.font=fontSize+"px monospace";
+for(let i=0;i<drops.length;i++){ const text=letters[Math.floor(Math.random()*letters.length)]; ctx.fillText(text,i*fontSize,drops[i]*fontSize);
+if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0; drops[i]++; } }
 setInterval(draw,33);
 
-// Abas
+// --- Abas ---
 function mostrarAba(id){ document.querySelectorAll('.section').forEach(sec=>sec.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
-// Login/Register
-document.addEventListener("DOMContentLoaded", () => {
-    const loginModal = document.getElementById('login-modal');
-    const registerModal = document.getElementById('register-modal');
+// --- Login / Registro ---
+const loginModal = document.getElementById('login-modal');
+const registerModal = document.getElementById('register-modal');
 
-    loginModal.style.display = 'flex';
+document.getElementById("btnLogin").addEventListener("click", async () => {
+  const email = document.getElementById("login-usuario").value.trim();
+  const senha = document.getElementById("login-senha").value.trim();
+  if(!email || !senha) return alert("Preencha todos os campos");
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: senha });
+  if(error) return alert(error.message);
+  alert("Login realizado!");
+  loginModal.style.display = "none";
+});
 
-    document.getElementById("btnLogin").addEventListener("click", async () => {
-        const usuario = document.getElementById("login-usuario").value.trim();
-        const senha = document.getElementById("login-senha").value.trim();
-        if(!usuario || !senha) return alert("Preencha usuário e senha!");
-        const { data, error } = await supabase.auth.signInWithPassword({ email: usuario, password: senha });
-        if(error) return alert(error.message);
-        alert("Login realizado!");
-        loginModal.style.display = 'none';
-        mostrarAba('localizador');
-    });
+document.getElementById("btnRegistrarTela").addEventListener("click", ()=>{
+  loginModal.style.display = "none";
+  registerModal.style.display = "flex";
+});
 
-    document.getElementById("btnRegistrarTela").addEventListener("click", () => {
-        loginModal.style.display = 'none';
-        registerModal.style.display = 'flex';
-    });
+document.getElementById("btnVoltarRegister").addEventListener("click", ()=>{
+  registerModal.style.display = "none";
+  loginModal.style.display = "flex";
+});
 
-    document.getElementById("btnVoltarRegister").addEventListener("click", () => {
-        registerModal.style.display = 'none';
-        loginModal.style.display = 'flex';
-    });
+document.getElementById("btnRegister").addEventListener("click", async ()=>{
+  const email = document.getElementById("register-usuario").value.trim();
+  const senha = document.getElementById("register-senha").value.trim();
+  if(!email || !senha) return alert("Preencha todos os campos");
+  const { data, error } = await supabaseClient.auth.signUp({ email, password: senha });
+  if(error) return alert(error.message);
+  alert("Conta criada! Faça login.");
+  registerModal.style.display = "none";
+  loginModal.style.display = "flex";
+});
 
-    document.getElementById("btnRegister").addEventListener("click", async () => {
-        const usuario = document.getElementById("register-usuario").value.trim();
-        const senha = document.getElementById("register-senha").value.trim();
-        if(!usuario || !senha) return alert("Preencha usuário e senha!");
-        const { data, error } = await supabase.auth.signUp({ email: usuario, password: senha });
-        if(error) return alert(error.message);
-        alert("Conta criada! Faça login.");
-        registerModal.style.display = 'none';
-        loginModal.style.display = 'flex';
-    });
+// --- Simulação Localizador ---
+document.getElementById("btnLocalizar").addEventListener("click", ()=>{
+  const target = document.getElementById("inputTarget").value.trim();
+  if(!target) return alert("Digite um número ou email!");
+  const loading = document.getElementById("loadingLocalizacao");
+  const log = document.getElementById("logLocalizacao");
+  const result = document.getElementById("resultadoLocalizacao");
+  const mapDiv = document.getElementById("map");
+  const assinatura = document.getElementById("assinatura-template");
+
+  loading.classList.remove("hidden");
+  log.classList.add("hidden");
+  result.classList.add("hidden");
+  mapDiv.classList.add("hidden");
+  assinatura.style.display = "none";
+
+  setTimeout(()=>{
+    loading.classList.add("hidden");
+    log.classList.remove("hidden");
+    log.innerHTML = `Localização simulada de ${target} carregada...`;
+    mapDiv.classList.remove("hidden");
+    assinatura.style.display = "block";
+  }, 3000);
+});
+
+// --- Simulação WhatsApp ---
+const btnWhats = document.getElementById("btnWhats");
+const logWhats = document.getElementById("logWhats");
+const loadingWhats = document.getElementById("loadingWhats");
+const imgWhats = document.getElementById("imgWhats");
+
+btnWhats.addEventListener("click", ()=>{
+  const numero = document.getElementById("inputWhats").value.trim();
+  if(!numero) return alert("Digite um número de WhatsApp!");
+  loadingWhats.classList.remove("hidden");
+  logWhats.classList.add("hidden");
+  imgWhats.classList.add("hidden");
+
+  setTimeout(()=>{
+    loadingWhats.classList.add("hidden");
+    logWhats.classList.remove("hidden");
+    logWhats.innerHTML = `Mensagens simuladas de ${numero} carregadas...`;
+    imgWhats.classList.remove("hidden");
+  },3000);
 });
 </script>
 </body>
