@@ -9,7 +9,8 @@
 <style>
 * { box-sizing: border-box; }
 body { margin:0; font-family:'VT323',monospace; color:#00ffcc; background:black; overflow-x:hidden; }
-canvas#matrix { position:fixed; top:0; left:0; z-index:-1; width:100%; height:100%; background:black; }
+
+canvas#matrix { position:fixed; top:0; left:0; z-index:-1; width:100%; height:100%; background:black; pointer-events:none; }
 
 header { text-align:center; padding:20px; font-family:'Orbitron',sans-serif; color:#00ffe5; text-shadow:0 0 15px #00ffe5; }
 header .radar { font-size:40px; display:inline-block; animation:spin 4s linear infinite; color:#00ffcc; text-shadow:0 0 20px #00ffcc; }
@@ -25,10 +26,30 @@ nav button:hover { background:#00ffcc; color:black; box-shadow:0 0 30px #00ffcc,
 .btn { display:inline-block; background:transparent; border:2px solid #00ffcc; color:#00ffcc; padding:10px 20px; margin-top:15px; border-radius:10px; font-size:18px; cursor:pointer; text-shadow:0 0 10px #00ffcc; box-shadow:0 0 20px rgba(0,255,204,0.6); transition: all 0.2s; }
 .btn:hover { background:#00ffcc; color:black; box-shadow:0 0 30px #00ffcc,0 0 60px #00ffcc; }
 
-#paywall-modal,#register-modal { position:fixed; inset:0; background:rgba(0,0,0,0.85); display:none; align-items:center; justify-content:center; z-index:9999; }
-#login-modal { position:fixed; inset:0; background:rgba(0,0,0,0.85); display:flex; align-items:center; justify-content:center; z-index:9999; }
+#paywall-modal,#login-modal,#register-modal {
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.85);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:99999;
+}
 
-#paywall-modal .content,#login-modal .content,#register-modal .content { background:#111; border:2px solid #00ffcc; padding:30px; border-radius:15px; text-align:center; color:#00ffcc; box-shadow:0 0 25px #00ffcc; max-width:400px; width:90%; animation:pulse 2s infinite; }
+#paywall-modal .content,#login-modal .content,#register-modal .content {
+    background:#111;
+    border:2px solid #00ffcc;
+    padding:30px;
+    border-radius:15px;
+    text-align:center;
+    color:#00ffcc;
+    box-shadow:0 0 25px #00ffcc;
+    max-width:400px;
+    width:90%;
+    animation:pulse 2s infinite;
+    pointer-events:auto;
+}
+
 @keyframes pulse { 0%,100%{box-shadow:0 0 20px #00ffcc;} 50%{box-shadow:0 0 40px #00ffcc;} }
 
 .hidden{ display:none; }
@@ -51,7 +72,9 @@ nav button:hover { background:#00ffcc; color:black; box-shadow:0 0 30px #00ffcc,
 </style>
 </head>
 <body>
+
 <canvas id="matrix"></canvas>
+
 <header>
     <div class="radar">📡</div>
     <h1>CADÊ VOCÊ?</h1>
@@ -93,11 +116,11 @@ nav button:hover { background:#00ffcc; color:black; box-shadow:0 0 30px #00ffcc,
 </section>
 </main>
 
-<!-- Modais Login, Registro, Paywall -->
+<!-- Modais -->
 <div id="login-modal">
 <div class="content">
 <h2>🔐 Login Necessário</h2>
-<input type="text" id="login-usuario" placeholder="Usuário (email)" class="btn" style="width:80%; margin:5px 0;">
+<input type="text" id="login-usuario" placeholder="Usuário" class="btn" style="width:80%; margin:5px 0;">
 <input type="password" id="login-senha" placeholder="Senha" class="btn" style="width:80%; margin:5px 0;">
 <br>
 <button id="btnLogin" class="btn">Entrar</button>
@@ -108,7 +131,7 @@ nav button:hover { background:#00ffcc; color:black; box-shadow:0 0 30px #00ffcc,
 <div id="register-modal">
 <div class="content">
 <h2>📝 Criar Conta</h2>
-<input type="text" id="register-usuario" placeholder="Usuário (email)" class="btn" style="width:80%; margin:5px 0;">
+<input type="text" id="register-usuario" placeholder="Usuário" class="btn" style="width:80%; margin:5px 0;">
 <input type="password" id="register-senha" placeholder="Senha" class="btn" style="width:80%; margin:5px 0;">
 <br>
 <button id="btnRegister" class="btn">Registrar</button>
@@ -131,8 +154,8 @@ nav button:hover { background:#00ffcc; color:black; box-shadow:0 0 30px #00ffcc,
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script type="module">
-import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -149,15 +172,11 @@ setInterval(draw,33);
 // --- Abas ---
 function mostrarAba(id){ document.querySelectorAll('.section').forEach(sec=>sec.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
-// --- Login/Register Supabase ---
-const btnLoginEl = document.getElementById("btnLogin");
-const btnRegisterEl = document.getElementById("btnRegister");
-const btnRegistrarTela = document.getElementById("btnRegistrarTela");
-const btnVoltarRegister = document.getElementById("btnVoltarRegister");
-
-btnLoginEl.addEventListener("click", async ()=>{
-    const usuario = document.getElementById("login-usuario").value.trim();
-    const senha = document.getElementById("login-senha").value.trim();
+// --- Login & Registro Supabase ---
+window.onload = ()=>{ document.getElementById('login-modal').style.display='flex'; };
+document.getElementById("btnLogin").addEventListener("click", async ()=>{
+    const usuario=document.getElementById("login-usuario").value.trim();
+    const senha=document.getElementById("login-senha").value.trim();
     if(!usuario || !senha) return alert("Preencha usuário e senha!");
     const { data, error } = await supabase.auth.signInWithPassword({ email: usuario, password: senha });
     if(error) return alert(error.message);
@@ -165,10 +184,9 @@ btnLoginEl.addEventListener("click", async ()=>{
     document.getElementById('login-modal').style.display='none';
     mostrarAba('localizador');
 });
-
-btnRegisterEl.addEventListener("click", async ()=>{
-    const usuario = document.getElementById("register-usuario").value.trim();
-    const senha = document.getElementById("register-senha").value.trim();
+document.getElementById("btnRegister").addEventListener("click", async ()=>{
+    const usuario=document.getElementById("register-usuario").value.trim();
+    const senha=document.getElementById("register-senha").value.trim();
     if(!usuario || !senha) return alert("Preencha usuário e senha!");
     const { data, error } = await supabase.auth.signUp({ email: usuario, password: senha });
     if(error) return alert(error.message);
@@ -177,12 +195,12 @@ btnRegisterEl.addEventListener("click", async ()=>{
     document.getElementById('login-modal').style.display='flex';
 });
 
-btnRegistrarTela.addEventListener("click", ()=>{
+// Abrir tela de registro
+document.getElementById("btnRegistrarTela").addEventListener("click", ()=>{
     document.getElementById('login-modal').style.display='none';
     document.getElementById('register-modal').style.display='flex';
 });
-
-btnVoltarRegister.addEventListener("click", ()=>{
+document.getElementById("btnVoltarRegister").addEventListener("click", ()=>{
     document.getElementById('register-modal').style.display='none';
     document.getElementById('login-modal').style.display='flex';
 });
