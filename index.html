@@ -83,16 +83,38 @@ nav button:hover { background:#00ffcc; color:black; box-shadow:0 0 30px #00ffcc,
 </section>
 </main>
 
-<!-- Modais Login, Registro, Paywall permanecem iguais -->
+<!-- Modais -->
+<div id="login-modal">
+<div class="content">
+<h2>🔐 Login Necessário</h2>
+<input type="text" id="login-usuario" placeholder="Usuário (email)" class="btn" style="width:80%; margin:5px 0;">
+<input type="password" id="login-senha" placeholder="Senha" class="btn" style="width:80%; margin:5px 0;">
+<br>
+<button id="btnLogin" class="btn">Entrar</button>
+<button id="btnRegistrarTela" class="btn">Criar Conta</button>
+</div>
+</div>
 
+<div id="register-modal">
+<div class="content">
+<h2>📝 Criar Conta</h2>
+<input type="text" id="register-usuario" placeholder="Usuário (email)" class="btn" style="width:80%; margin:5px 0;">
+<input type="password" id="register-senha" placeholder="Senha" class="btn" style="width:80%; margin:5px 0;">
+<br>
+<button id="btnRegister" class="btn">Registrar</button>
+<button id="btnVoltarRegister" class="btn">Voltar</button>
+</div>
+</div>
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script type="module">
-import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+<script>
+const SUPABASE_URL = "https://jyhemlmxsoqheirmivdn.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."; // chave anon
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// --- Matrix ---
+// Matrix effect
 const canvas=document.getElementById("matrix"),ctx=canvas.getContext("2d");
 canvas.height=window.innerHeight; canvas.width=window.innerWidth;
 const letters="01",fontSize=14,columns=canvas.width/fontSize,drops=Array(Math.floor(columns)).fill(1);
@@ -102,34 +124,46 @@ for(let i=0;i<drops.length;i++){ const text=letters[Math.floor(Math.random()*let
 if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0; drops[i]++; } }
 setInterval(draw,33);
 
-// --- Abas ---
+// Abas
 function mostrarAba(id){ document.querySelectorAll('.section').forEach(sec=>sec.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
-// --- Localizador e WhatsApp permanecem iguais, apenas o login/register agora usa Supabase ---
+// Login/Register
 window.onload = ()=>{ document.getElementById('login-modal').style.display='flex'; };
-const btnLoginEl = document.getElementById("btnLogin");
-const btnRegisterEl = document.getElementById("btnRegister");
 
-btnLoginEl.addEventListener("click", async ()=>{
-    const usuario = document.getElementById("login-usuario").value.trim();
-    const senha = document.getElementById("login-senha").value.trim();
-    if(!usuario || !senha) return alert("Preencha usuário e senha!");
-    const { data, error } = await supabase.auth.signInWithPassword({ email: usuario, password: senha });
-    if(error) return alert(error.message);
-    alert("Login realizado!");
-    document.getElementById('login-modal').style.display='none';
-    mostrarAba('localizador');
+document.getElementById("btnLogin").addEventListener("click", async () => {
+  const usuario = document.getElementById("login-usuario").value.trim();
+  const senha = document.getElementById("login-senha").value.trim();
+  if (!usuario || !senha) return alert("Preencha usuário e senha!");
+
+  const { data, error } = await supabase.auth.signInWithPassword({ email: usuario, password: senha });
+  if (error) return alert("Erro: " + error.message);
+
+  alert("Login feito com sucesso!");
+  document.getElementById('login-modal').style.display = 'none';
+  mostrarAba('localizador');
 });
 
-btnRegisterEl.addEventListener("click", async ()=>{
-    const usuario = document.getElementById("register-usuario").value.trim();
-    const senha = document.getElementById("register-senha").value.trim();
-    if(!usuario || !senha) return alert("Preencha usuário e senha!");
-    const { data, error } = await supabase.auth.signUp({ email: usuario, password: senha });
-    if(error) return alert(error.message);
-    alert("Conta criada! Faça login.");
-    document.getElementById('register-modal').style.display='none';
-    document.getElementById('login-modal').style.display='flex';
+document.getElementById("btnRegister").addEventListener("click", async () => {
+  const usuario = document.getElementById("register-usuario").value.trim();
+  const senha = document.getElementById("register-senha").value.trim();
+  if (!usuario || !senha) return alert("Preencha usuário e senha!");
+
+  const { data, error } = await supabase.auth.signUp({ email: usuario, password: senha });
+  if (error) return alert("Erro: " + error.message);
+
+  alert("Conta criada! Confirme seu e-mail antes de logar.");
+  document.getElementById('register-modal').style.display = 'none';
+  document.getElementById('login-modal').style.display = 'flex';
+});
+
+// Abrir tela de registrar
+document.getElementById("btnRegistrarTela").addEventListener("click", ()=> {
+  document.getElementById('login-modal').style.display='none';
+  document.getElementById('register-modal').style.display='flex';
+});
+document.getElementById("btnVoltarRegister").addEventListener("click", ()=> {
+  document.getElementById('register-modal').style.display='none';
+  document.getElementById('login-modal').style.display='flex';
 });
 </script>
 </body>
