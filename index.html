@@ -10,27 +10,37 @@
 * { box-sizing: border-box; }
 body { margin:0; font-family:'VT323',monospace; color:#00ffcc; background:black; overflow-x:hidden; }
 canvas#matrix { position:fixed; top:0; left:0; z-index:-1; width:100%; height:100%; background:black; }
+
 header { text-align:center; padding:20px; font-family:'Orbitron',sans-serif; color:#00ffe5; text-shadow:0 0 15px #00ffe5; }
 header .radar { font-size:40px; display:inline-block; animation:spin 4s linear infinite; color:#00ffcc; text-shadow:0 0 20px #00ffcc; }
 @keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);} }
+
 nav { text-align:center; margin-bottom:20px; }
 nav button { display:inline-block; background:transparent; border:2px solid #00ffcc; color:#00ffcc; padding:12px 24px; margin:10px; border-radius:10px; font-size:18px; cursor:pointer; text-shadow:0 0 10px #00ffcc; box-shadow:0 0 20px rgba(0,255,204,0.6); transition: all 0.2s; }
 nav button:hover { background:#00ffcc; color:black; box-shadow:0 0 30px #00ffcc,0 0 60px #00ffcc; }
+
 .section { display:none; text-align:center; padding:20px; }
 .section.active { display:block; }
+
 .btn { display:inline-block; background:transparent; border:2px solid #00ffcc; color:#00ffcc; padding:10px 20px; margin-top:15px; border-radius:10px; font-size:18px; cursor:pointer; text-shadow:0 0 10px #00ffcc; box-shadow:0 0 20px rgba(0,255,204,0.6); transition: all 0.2s; }
 .btn:hover { background:#00ffcc; color:black; box-shadow:0 0 30px #00ffcc,0 0 60px #00ffcc; }
-#paywall-modal,#login-modal,#register-modal { position:fixed; inset:0; background:rgba(0,0,0,0.85); display:none; align-items:center; justify-content:center; z-index:9999; }
+
+#paywall-modal,#register-modal { position:fixed; inset:0; background:rgba(0,0,0,0.85); display:none; align-items:center; justify-content:center; z-index:9999; }
+#login-modal { position:fixed; inset:0; background:rgba(0,0,0,0.85); display:flex; align-items:center; justify-content:center; z-index:9999; }
+
 #paywall-modal .content,#login-modal .content,#register-modal .content { background:#111; border:2px solid #00ffcc; padding:30px; border-radius:15px; text-align:center; color:#00ffcc; box-shadow:0 0 25px #00ffcc; max-width:400px; width:90%; animation:pulse 2s infinite; }
 @keyframes pulse { 0%,100%{box-shadow:0 0 20px #00ffcc;} 50%{box-shadow:0 0 40px #00ffcc;} }
+
 .hidden{ display:none; }
 .loading-text{ margin-top:20px; font-size:18px; }
 .sim-log{ text-align:left; background:#111; color:#00ffcc; padding:10px; border-radius:8px; max-height:400px; overflow:auto; font-size:14px; box-shadow:0 0 15px #00ffcc; display:flex; flex-direction:column; }
 .result{ margin-top:15px; font-size:18px; font-weight:bold; }
 .fade-in{ opacity:0; transform: scale(0.95); animation: fadeIn 1s forwards; }
 @keyframes fadeIn{to{opacity:1;transform: scale(1);} }
+
 .floating-btn{ position:fixed; bottom:20px; right:20px; z-index:999; background:#00ffcc; color:black; border:none; padding:15px 20px; border-radius:50px; font-size:18px; cursor:pointer; box-shadow:0 0 20px #00ffcc; transition: all 0.2s; }
 .floating-btn:hover{ background:#00ffe5; box-shadow:0 0 30px #00ffcc,0 0 60px #00ffcc; }
+
 #map{ width:90%; height:220px; border-radius:10px; box-shadow:0 0 20px #00ffcc; margin: 10px auto; filter:blur(8px); }
 #assinatura-template{ display:none; text-align:center; margin-top:20px; padding:20px; border:2px solid #00ffcc; border-radius:15px; font-size:18px; max-width:400px; margin-left:auto; margin-right:auto; box-shadow:0 0 25px #00ffcc; }
 #imgWhats{ width:320px; margin-top:20px; border-radius:15px; box-shadow:0 0 30px #00ffcc,0 0 50px #00ffe5; }
@@ -83,7 +93,7 @@ nav button:hover { background:#00ffcc; color:black; box-shadow:0 0 30px #00ffcc,
 </section>
 </main>
 
-<!-- Modais -->
+<!-- Modais Login, Registro, Paywall -->
 <div id="login-modal">
 <div class="content">
 <h2>🔐 Login Necessário</h2>
@@ -106,15 +116,27 @@ nav button:hover { background:#00ffcc; color:black; box-shadow:0 0 30px #00ffcc,
 </div>
 </div>
 
-<!-- Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script>
-const SUPABASE_URL = "https://jyhemlmxsoqheirmivdn.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5aGVtbG14c29xaGVpcm1pdmRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1NDUzNjAsImV4cCI6MjA3MzEyMTM2MH0.nXhG0EV5FkSeZe1v9Tgf2Jc2KmIL4ixplgGWUJ_NTY4"; // chave anon
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+<div id="paywall-modal">
+<div class="content">
+<h2>🚀 Assinatura Necessária</h2>
+<p>Para desbloquear o resultado, assine agora:</p>
+<p style="font-size:24px; font-weight:bold;">R$ 24,99</p>
+<a href="https://seu-link-de-assinatura.com" target="_blank" class="btn" id="btnAssinar">ASSINAR AGORA</a>
+<br>
+<button id="cancelar-assinatura" class="btn">Cancelar</button>
+</div>
+</div>
 
-// Matrix effect
+<button class="floating-btn" id="btnFlutuante">ASSINAR</button>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script type="module">
+import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// --- Matrix ---
 const canvas=document.getElementById("matrix"),ctx=canvas.getContext("2d");
 canvas.height=window.innerHeight; canvas.width=window.innerWidth;
 const letters="01",fontSize=14,columns=canvas.width/fontSize,drops=Array(Math.floor(columns)).fill(1);
@@ -124,46 +146,45 @@ for(let i=0;i<drops.length;i++){ const text=letters[Math.floor(Math.random()*let
 if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0; drops[i]++; } }
 setInterval(draw,33);
 
-// Abas
+// --- Abas ---
 function mostrarAba(id){ document.querySelectorAll('.section').forEach(sec=>sec.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
-// Login/Register
-window.onload = ()=>{ document.getElementById('login-modal').style.display='flex'; };
+// --- Login/Register Supabase ---
+const btnLoginEl = document.getElementById("btnLogin");
+const btnRegisterEl = document.getElementById("btnRegister");
+const btnRegistrarTela = document.getElementById("btnRegistrarTela");
+const btnVoltarRegister = document.getElementById("btnVoltarRegister");
 
-document.getElementById("btnLogin").addEventListener("click", async () => {
-  const usuario = document.getElementById("login-usuario").value.trim();
-  const senha = document.getElementById("login-senha").value.trim();
-  if (!usuario || !senha) return alert("Preencha usuário e senha!");
-
-  const { data, error } = await supabase.auth.signInWithPassword({ email: usuario, password: senha });
-  if (error) return alert("Erro: " + error.message);
-
-  alert("Login feito com sucesso!");
-  document.getElementById('login-modal').style.display = 'none';
-  mostrarAba('localizador');
+btnLoginEl.addEventListener("click", async ()=>{
+    const usuario = document.getElementById("login-usuario").value.trim();
+    const senha = document.getElementById("login-senha").value.trim();
+    if(!usuario || !senha) return alert("Preencha usuário e senha!");
+    const { data, error } = await supabase.auth.signInWithPassword({ email: usuario, password: senha });
+    if(error) return alert(error.message);
+    alert("Login realizado!");
+    document.getElementById('login-modal').style.display='none';
+    mostrarAba('localizador');
 });
 
-document.getElementById("btnRegister").addEventListener("click", async () => {
-  const usuario = document.getElementById("register-usuario").value.trim();
-  const senha = document.getElementById("register-senha").value.trim();
-  if (!usuario || !senha) return alert("Preencha usuário e senha!");
-
-  const { data, error } = await supabase.auth.signUp({ email: usuario, password: senha });
-  if (error) return alert("Erro: " + error.message);
-
-  alert("Conta criada! Confirme seu e-mail antes de logar.");
-  document.getElementById('register-modal').style.display = 'none';
-  document.getElementById('login-modal').style.display = 'flex';
+btnRegisterEl.addEventListener("click", async ()=>{
+    const usuario = document.getElementById("register-usuario").value.trim();
+    const senha = document.getElementById("register-senha").value.trim();
+    if(!usuario || !senha) return alert("Preencha usuário e senha!");
+    const { data, error } = await supabase.auth.signUp({ email: usuario, password: senha });
+    if(error) return alert(error.message);
+    alert("Conta criada! Faça login.");
+    document.getElementById('register-modal').style.display='none';
+    document.getElementById('login-modal').style.display='flex';
 });
 
-// Abrir tela de registrar
-document.getElementById("btnRegistrarTela").addEventListener("click", ()=> {
-  document.getElementById('login-modal').style.display='none';
-  document.getElementById('register-modal').style.display='flex';
+btnRegistrarTela.addEventListener("click", ()=>{
+    document.getElementById('login-modal').style.display='none';
+    document.getElementById('register-modal').style.display='flex';
 });
-document.getElementById("btnVoltarRegister").addEventListener("click", ()=> {
-  document.getElementById('register-modal').style.display='none';
-  document.getElementById('login-modal').style.display='flex';
+
+btnVoltarRegister.addEventListener("click", ()=>{
+    document.getElementById('register-modal').style.display='none';
+    document.getElementById('login-modal').style.display='flex';
 });
 </script>
 </body>
