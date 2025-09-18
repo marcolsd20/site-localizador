@@ -4,9 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cadê Você?</title>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-17578426438"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-17578426438');
+</script>
+
 <link href="https://fonts.googleapis.com/css2?family=VT323&family=Orbitron:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <style>
+/* ... seu CSS existente ... */
 *{box-sizing:border-box;}
 body{margin:0;font-family:'VT323',monospace;color:#00ffcc;background:black;overflow-x:hidden;}
 canvas#matrix{position:fixed;top:0;left:0;z-index:-1;width:100%;height:100%;background:black;}
@@ -163,11 +174,12 @@ function simularProcesso(logEl,finalEl,etapas,callback){
     proximo();
 }
 
-// --- Assinatura Localizador ---
+// --- Assinatura Localizador com rastreamento Google Ads ---
 document.getElementById("btnAssinar").addEventListener("click",()=>{
+    gtag('event', 'conversion', {'send_to': 'AW-17578426438/CONVERSAO_LOCALIZADOR'});
     window.open("https://invoice.infinitepay.io/plans/blackoutlocalltda/ES5I53r3v","_blank");
     resultadoLocalizacao.innerHTML="⌛ Analisando assinatura...";
-    let totalSeconds=2*60*60; // 2h
+    let totalSeconds=2*60*60;
     const interval=setInterval(()=>{
         if(totalSeconds<0){clearInterval(interval);resultadoLocalizacao.innerHTML="✅ Alvo encontrado!";return;}
         const h=Math.floor(totalSeconds/3600);
@@ -199,7 +211,9 @@ btnWhats.addEventListener("click",()=>{
     },2000);
 });
 
+// --- Assinatura WhatsApp com rastreamento Google Ads ---
 document.getElementById("btnAssinarWhats").addEventListener("click",()=>{
+    gtag('event', 'conversion', {'send_to': 'AW-17578426438/CONVERSAO_WHATS'});
     window.open("https://invoice.infinitepay.io/plans/blackoutlocalltda/ES5I53r3v","_blank");
     alert("✅ analisando sua assinatura.");
 });
