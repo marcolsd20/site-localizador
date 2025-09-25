@@ -1,0 +1,15 @@
+{
+  "type": "card",
+  "payer": {
+    "email": "1232132@gmail.com",
+    "identification": {
+      "type": "CPF",
+      "number": "51893815870"
+    }
+  },
+  "amount": 39.9,
+  "installments": 1,
+  "paymentId": 126888086011,
+  "status": "in_process",
+  "status_detail": "pending_review_manual"
+}
